@@ -1,5 +1,5 @@
 # Enterprise Gateway Test App
-> Enterprise Gateway Test App은 Jupyter Enterprise Gateway(https://jupyter-enterprise-gateway.readthedocs.io/en/latest/index.html)를 이용하여 파이썬 커널 생성/삭제/실행 테스트를 할수 있는 웹 기반 도구이다.
+> Enterprise Gateway Test App은 Jupyter Enterprise Gateway(https://jupyter-enterprise-gateway.readthedocs.io/en/latest/index.html) 파이썬 커널의 생성/삭제/실행 테스트 할수 있는 웹 기반 도구
 
 ## 화면 설명 
 
@@ -13,7 +13,8 @@
 2. 커널 목록
    * 생성된 커널 목록
 3. 파이썬 코드 편집기
-   * 코드 하이라이팅
+   * Syntax Highlight
+   * Line Number
    * 자동 들여쓰기
 4. 코드 실행
    * `Run`: 코드 시행 (코드 실행 완료 후 결과 출력)
