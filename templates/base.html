@@ -1,0 +1,19 @@
+<!doctype html>
+<title>{% block title %}{% endblock %} - Simple App</title>
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='codemirror.css') }}">
+<script src="{{ url_for('static', filename='codemirror.js') }}"></script>
+<script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.3.min.js') }}"></script>
+<nav>
+  <h1>Simple App</h1>
+</nav>
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</section>

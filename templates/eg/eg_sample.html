@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Enterprise Gateway Test{% endblock %}</h1>
+  <script src="{{ url_for('static', filename='python.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<script>
+var msg_id = null
+
+function updateKernels(kernels) {
+  var kernel_list = $("#kernel_list > li input")
+  var kernel_labels = $("#kernel_list > li label")
+  for (let i=0; i < kernel_list.length; i++) {
+    for (let j=0; j < kernels.length; j++) {
+      if (kernel_list[i]["id"] == kernels[j]["id"]) {
+        kernel_labels[i].textContent = kernels[j]["id"] + ' (name: ' +  kernels[j]["name"] + ', state: ' + kernels[j]["execution_state"] + ', connections: ' +  kernels[j]["connections"] + ')'
+      }
+    }
+  }
+}
+
+function printKernels(kernels) {
+  var kernel_list = $("#kernel_list")
+  for (let i=0; i < kernels.length; i++) {
+    kernel_list.append(
+    '<li><input type="radio" id="' + kernels[i]["id"] + '" name="kernels" value="' + kernels[i]["id"] + '"><label for="kernels">' + kernels[i]["id"] + ' (name: ' +  kernels[i]["name"] + ', state: ' + kernels[i]["execution_state"] + ', connections: ' +  kernels[i]["connections"] + ')</label></li>'
+    )
+  }
+}
+
+const ck_url = {{ url_for("eg.create_eg")|tojson }}
+function createKernel() {
+  fetch(ck_url, {
+    "method": "GET",
+    "headers": {"Content-Type": "application/json"}
+  })
+  .then(response => response.json())
+  .then(json => {
+    printKernels(json.kernels_opened)
+  })
+  .catch(error => console.log("error:", error));
+}
+
+const rk_url = {{ url_for("eg.run_eg")|tojson }}
+function runKernel() {
+  var selected_kernel = $("input[name='kernels']:checked").val();
+  var code_val = editor.getValue();
+
+  if (typeof selected_kernel == "undefined" || selected_kernel == null || selected_kernel == "") {
+    addToOutput("사용할 커널을 선택하지 않았습니다.");
+  } else {
+    let run_data = {
+      "kernel_id": selected_kernel,
+      "timeout": 120,
+      "code": code_val,
+    }
+    fetch(rk_url, {
+      "method": "POST",
+      "headers": {"Content-Type": "application/json"},
+      "body": JSON.stringify(run_data),
+    })
+    .then(response => response.json())
+    .then(json => {
+      updateKernels(json.kernels_opened);
+      addToOutput(json.res);
+    })
+    .catch(error => console.log("error:", error));
+  }
+}
+
+const rka_url = {{ url_for("eg.run_eg_async")|tojson }}
+function runKernelAsync() {
+  var selected_kernel = $("input[name='kernels']:checked").val();
+  var code_val = editor.getValue();
+
+  if (typeof selected_kernel == "undefined" || selected_kernel == null || selected_kernel == "") {
+    addToOutput("사용할 커널을 선택하지 않았습니다.");
+  } else {
+    let run_data = {
+      "kernel_id": selected_kernel,
+      "timeout": 120,
+      "code": code_val,
+    }
+    fetch(rka_url, {
+      "method": "POST",
+      "headers": {"Content-Type": "application/json"},
+      "body": JSON.stringify(run_data),
+    })
+    .then(response => response.json())
+    .then(json => {
+      updateKernels(json.kernels_opened);
+      // addToOutput(json.res);
+      addToOutput("");
+      msg_id = json.res
+    })
+    .catch(error => console.log("error:", error));
+  }
+}
+
+const reska_url = {{ url_for("eg.res_eg_async")|tojson }}
+function gesResAsync() {
+  var selected_kernel = $("input[name='kernels']:checked").val();
+  var code_val = editor.getValue();
+
+  if (typeof selected_kernel == "undefined" || selected_kernel == null || selected_kernel == "") {
+    addToOutput("사용할 커널을 선택하지 않았습니다.");
+  } else {
+    let run_data = {
+      "kernel_id": selected_kernel,
+      "msg_id": msg_id,
+      "timeout": 120,
+    }
+    fetch(reska_url, {
+      "method": "POST",
+      "headers": {"Content-Type": "application/json"},
+      "body": JSON.stringify(run_data),
+    })
+    .then(response => response.json())
+    .then(json => {
+      updateKernels(json.kernels_opened);
+      updateToOutput(json.res);
+    })
+    .catch(error => console.log("error:", error));
+  }
+}
+
+const dk_url = {{ url_for("eg.delete_eg")|tojson }}
+function deleteKernel() {
+  var selected_kernel = $("input[name='kernels']:checked").val();
+
+  if (typeof selected_kernel == "undefined" || selected_kernel == null || selected_kernel == "") {
+    addToOutput("사용할 커널을 선택하지 않았습니다.");
+  } else {
+    let data = {
+      "kernel_id": selected_kernel,
+    }
+    fetch(dk_url, {
+      "method": "DELETE",
+      "headers": {"Content-Type": "application/json"},
+      "body": JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(json => {
+      $("#kernel_list").empty();
+      printKernels(json.kernels_opened);
+      addToOutput(json.res);
+    })
+    .catch(error => console.log("error:", error));
+  }
+}
+
+const ik_url = {{ url_for("eg.interrupt_eg")|tojson }}
+function interruptKernel() {
+  var selected_kernel = $("input[name='kernels']:checked").val();
+
+  if (typeof selected_kernel == "undefined" || selected_kernel == null || selected_kernel == "") {
+    addToOutput("사용할 커널을 선택하지 않았습니다.");
+  } else {
+    let data = {
+      "kernel_id": selected_kernel,
+    }
+    fetch(ik_url, {
+      "method": "POST",
+      "headers": {"Content-Type": "application/json"},
+      "body": JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(json => {
+      addToOutput(json.res);
+    })
+    .catch(error => console.log("error:", error));
+  }
+}
+
+const uw_url = {{ url_for("eg.upgrade_websocket")|tojson }}
+function upgradeWebsocket() {
+  var selected_kernel = $("input[name='kernels']:checked").val();
+
+  if (typeof selected_kernel == "undefined" || selected_kernel == null || selected_kernel == "") {
+    addToOutput("사용할 커널을 선택하지 않았습니다.");
+  } else {
+    let data = {
+      "kernel_id": selected_kernel,
+    }
+    fetch(uw_url, {
+      "method": "POST",
+      "headers": {"Content-Type": "application/json"},
+      "body": JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(json => {
+      addToOutput(json.res);
+    })
+    .catch(error => console.log("error:", error));
+  }
+}
+
+</script>
+<div align="right">
+  <button onclick="createKernel()">Create Kernel</button>
+  <button onclick="deleteKernel()">Delete Kernel</button>
+  <button onclick="interruptKernel()">Interrupt Kernel</button>
+  <button onclick="upgradeWebsocket()">Upgrade Websocket</button>
+</div>
+<div>Kernels</div>
+<ul id="kernel_list"></ul>
+<br />
+<div>Python Code</div>
+<textarea name="code" id="code" style="width: 100%;" rows="20"></textarea>
+<br />
+<div align="right">
+  <button onclick="runKernel()">Run</button>
+  <button onclick="runKernelAsync()">Async Run</button>
+  <button onclick="gesResAsync()">Async Res</button>
+</div>
+<br />
+<br />
+<div>Output</div>
+<textarea id="output" style="width: 100%;" rows="6" disabled></textarea>
+<script>
+var res = {{ res|tojson }}
+var kernels = {{ kernels_opened|tojson }}
+printKernels(kernels)
+
+const output = document.getElementById("output");
+
+function addToOutput(s) {
+  if (s.length > 0 && s.slice(-1) != '\n') {
+    s = s + "\n";
+  }
+  output.value = s;
+}
+
+function updateToOutput(s) {
+  if (s.length > 0 && s.slice(-1) != '\n') {
+    s = s + "\n";
+  }
+  output.value += s;
+}
+
+var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+      mode: {name: "python",
+             version: 3,
+             singleLineStringErrors: false},
+      lineNumbers: true,
+      indentUnit: 4,
+      matchBrackets: true
+  });
+</script>
+{% endblock %}

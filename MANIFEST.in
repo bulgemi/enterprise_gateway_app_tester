@@ -1,0 +1,3 @@
+graft simple_app/static
+graft simple_app/templates
+global-exclude *.pyc
