@@ -3,6 +3,8 @@
 
 ## 화면 설명 
 
+![Enterprise Gateway Test App UI](https://github.com/bulgemi/enterprise_gateway_app_tester/blob/main/docs/eg_test_layout.png)
+
 1. 커널 관리
    * `Create Kernel`: 커널(python kubernetes) 생성
    * `Delete Kernel`:  커널 삭제
